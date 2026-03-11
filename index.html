@@ -60,7 +60,6 @@
         .slider-wrap { background: #2a2a35; padding: 10px; border-radius: 6px; }
         input[type=range] { width: 100%; cursor: pointer; accent-color: #3498db; }
 
-        /* Style untuk Template PDF */
         #pdf-template {
             position: absolute; left: -9999px; top: -9999px;
             width: 800px; padding: 40px; background: white; color: black;
@@ -78,7 +77,7 @@
     </head>
     <body>
         <header>
-            <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAMAAAB4YyDdAAAASFBMVEVHcEwAAAAAAAD///8AAAD///8AAAD///8AAAD///8AAAD///8AAAD///8AAAD///8AAAD///8AAAD///8AAAD///8AAAD///8AAABm77SNAAAAFnRSTlMA8fD08vLz9PT19vf4+fr7/P3+///mYy0hAAABrklEQVRo3u2Z2XLDMAhEBYfEybZp7///6pI4ThzXmSZN29OHmSdBEM7CArIsS5YsWbJkyZJlbYmIlPyvYIwZ+Z+QMWYI6X9KCHm9TggZ6hNCSOgTQm6pTwiZ0SeEnNGFkN90ISSkCwkp6EJITBdCQp8QMtSFkKEuJCAnkIAsQAKyAAnIAiQgCyR9CMn6EJKT9CHL9CHL9CHL9CHL9CHL9CHL9CHL9CHL9CHL9CHLtCHZf96f9CHeIe7D8iFeyPuE1BNC6gmh/VvAOfXU008987SAmrN65mre698S762mH87/W9o9P/V+qP2w7nN37v2S7u869yS9S+fSufRz6ed0Lp1L59LPpZ9L59K59HPp59K5dC6dS+fSz6WfS+fSuXQu/Vz6uXQunUvn0s+ln0vn0rl0Lv1c+rl0Lp1L59LPpZ9L59K5dC79XPo5nUvn0rn0c+mX9X79Wz2/98v0PEnPk/QsSc+S9CxJz5L0LEnPkvQsSc+S9CxJz5L0LEnPkvQsSc+S9CxJz5L0LEnPkvQsSc+S9CxJz5L0LEnPkvQsSc+S9CxJz5L0LEnPkvQsSc+S9CxJz5L0LEnPkvQsSc+S9CxJz5L0LEnPkvQsSc+S9CxJz5L0LMmSJatvXzYgIdG6FvYvAAAAAElFTkSuQmCC" alt="Logo PUO" class="header-logo">
+            <img src="logo_puo.png" alt="Logo PUO" class="header-logo">
             Maklumat Lot
         </header>
 
@@ -122,7 +121,7 @@
 
         <div id="pdf-template">
             <div class="pdf-header">
-                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAMAAAB4YyDdAAAASFBMVEVHcEwAAAAAAAD///8AAAD///8AAAD///8AAAD///8AAAD///8AAAD///8AAAD///8AAAD///8AAAD///8AAAD///8AAABm77SNAAAAFnRSTlMA8fD08vLz9PT19vf4+fr7/P3+///mYy0hAAABrklEQVRo3u2Z2XLDMAhEBYfEybZp7///6pI4ThzXmSZN29OHmSdBEM7CArIsS5YsWbJkyZJlbYmIlPyvYIwZ+Z+QMWYI6X9KCHm9TggZ6hNCSOgTQm6pTwiZ0SeEnNGFkN90ISSkCwkp6EJITBdCQp8QMtSFkKEuJCAnkIAsQAKyAAnIAiQgCyR9CMn6EJKT9CHL9CHL9CHL9CHL9CHL9CHL9CHL9CHL9CHL9CHLtCHZf96f9CHeIe7D8iFeyPuE1BNC6gmh/VvAOfXU008987SAmrN65mre698S762mH87/W9o9P/V+qP2w7nN37v2S7u869yS9S+fSufRz6ed0Lp1L59LPpZ9L59K59HPp59K5dC6dS+fSz6WfS+fSuXQu/Vz6uXQunUvn0s+ln0vn0rl0Lv1c+rl0Lp1L59LPpZ9L59K5dC79XPo5nUvn0rn0c+mX9X79Wz2/98v0PEnPk/QsSc+S9CxJz5L0LEnPkvQsSc+S9CxJz5L0LEnPkvQsSc+S9CxJz5L0LEnPkvQsSc+S9CxJz5L0LEnPkvQsSc+S9CxJz5L0LEnPkvQsSc+S9CxJz5L0LEnPkvQsSc+S9CxJz5L0LEnPkvQsSc+S9CxJz5L0LMmSJatvXzYgIdG6FvYvAAAAAElFTkSuQmCC" class="pdf-logo">
+                <img src="logo_puo.png" class="pdf-logo">
                 <h1>LAPORAN MAKLUMAT LOT</h1>
                 <p>Politeknik Ungku Omar - Sistem Land Explorer</p>
             </div>
@@ -182,7 +181,6 @@
             
             const mapElement = document.getElementById('map');
             
-            // html2canvas capture
             const canvas = await html2canvas(mapElement, {
                 useCORS: true,
                 allowTaint: true,
