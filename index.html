@@ -90,7 +90,7 @@
                     <input type="range" id="opacitySlider" min="0" max="1" step="0.1" value="0.5">
                 </div>
                 <div class="section-header">🌍 Land Explorer</div>
-                <button class="btn-green" onclick="alert('Gunakan butang carian di peta')">Cari Lot</button>
+                <button class="btn-green" onclick="toggleSearch()">Cari Lot</button>
                 <button class="btn-red" onclick="location.reload()">Reset Peta</button>
                 <button class="btn-blue" onclick="generatePDF()"><i class="fas fa-file-pdf"></i> Export Detail (PDF)</button>
 
@@ -160,23 +160,25 @@
             opacity: 1.0, attribution: '&copy; Google Maps', maxZoom: 28, crossOrigin: true
         }).addTo(map);
 
+        function updateSidebar(feature, latlng) {
+            document.getElementById('val-nolot').innerText = feature.properties['NO_LOT'] || '-';
+            document.getElementById('val-pemilik').innerText = feature.properties['tsp — pe'] || '-';
+            document.getElementById('val-area').innerText = feature.properties['AREA'] || '-';
+            document.getElementById('val-tsp-ha').innerText = feature.properties['tsp — ha'] || '-';
+            document.getElementById('val-layer-extra').innerText = feature.properties['layer'] || '-';
+            
+            if(latlng) {
+                document.getElementById('val-easting').innerText = latlng.lng.toFixed(6);
+                document.getElementById('val-northing').innerText = latlng.lat.toFixed(6);
+            }
+        }
+
         function pop_LOTFINAL_0(feature, layer) {
             layer.on('click', function(e) {
                 if (selectedFeature) { layer_LOTFINAL_0.resetStyle(selectedFeature); }
                 selectedFeature = e.target;
                 selectedFeature.setStyle({ fillColor: '#ffff00', fillOpacity: 0.8, color: '#0000ff', weight: 3 });
-
-                // Paparkan maklumat asal
-                document.getElementById('val-nolot').innerText = feature.properties['NO_LOT'] || '-';
-                document.getElementById('val-pemilik').innerText = feature.properties['tsp — pe'] || '-';
-                document.getElementById('val-area').innerText = feature.properties['AREA'] || '-';
-                document.getElementById('val-tsp-ha').innerText = feature.properties['tsp — ha'] || '-';
-                document.getElementById('val-layer-extra').innerText = feature.properties['layer'] || '-';
-
-                // TAMBAHAN: Kemaskini koordinat Easting & Northing semasa klik
-                // .lng adalah X (Easting), .lat adalah Y (Northing)
-                document.getElementById('val-easting').innerText = e.latlng.lng.toFixed(6);
-                document.getElementById('val-northing').innerText = e.latlng.lat.toFixed(6);
+                updateSidebar(feature, e.latlng);
             });
         }
 
@@ -185,12 +187,43 @@
             style: function(f) { return { opacity:1, color:'white', weight:1, fillOpacity:currentOpacity, fillColor:'#3498db' }; }
         }).addTo(map);
 
+        // CONFIG SEARCH CONTROL
+        var searchControl = new L.Control.Search({
+            layer: layer_LOTFINAL_0,
+            propertyName: 'NO_LOT', // Kolum yang dicari
+            marker: false,
+            moveToLocation: function(latlng, title, map) {
+                map.setView(latlng, 19);
+            }
+        });
+
+        searchControl.on('search:locationfound', function(e) {
+            if (selectedFeature) { layer_LOTFINAL_0.resetStyle(selectedFeature); }
+            selectedFeature = e.layer;
+            selectedFeature.setStyle({ fillColor: '#ffff00', fillOpacity: 0.8, color: '#0000ff', weight: 3 });
+            updateSidebar(e.layer.feature, e.latlng);
+        });
+
+        map.addControl(searchControl);
+
+        // Fungsi butang Sidebar untuk trigger carian
+        function toggleSearch() {
+            const searchInput = document.querySelector('.search-input');
+            if (searchInput) {
+                searchControl.expand();
+                searchInput.focus();
+            } else {
+                alert("Sila gunakan ikon kanta pembesar di atas peta.");
+            }
+        }
+
         async function generatePDF() {
             const { jsPDF } = window.jspdf;
             const noLot = document.getElementById('val-nolot').innerText;
             if(noLot === "-") { alert("Sila pilih lot di atas peta terlebih dahulu."); return; }
 
             const btn = document.querySelector('.btn-blue');
+            const originalHTML = btn.innerHTML;
             btn.innerHTML = "Processing...";
             
             const mapElement = document.getElementById('map');
@@ -222,7 +255,7 @@
             doc.addImage(finalImg, 'JPEG', 0, 0, width, height);
             doc.save('Laporan_Lot_' + noLot + '.pdf');
             
-            btn.innerHTML = '<i class="fas fa-file-pdf"></i> Export Detail (PDF)';
+            btn.innerHTML = originalHTML;
         }
 
         document.getElementById('opacitySlider').oninput = function(e) {
