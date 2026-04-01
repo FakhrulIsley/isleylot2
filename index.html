@@ -8,6 +8,7 @@
         <link rel="stylesheet" href="css/L.Control.Layers.Tree.css">
         <link rel="stylesheet" href="css/qgis2web.css">
         <link rel="stylesheet" href="css/fontawesome-all.min.css">
+        <link rel="stylesheet" href="css/leaflet-search.css">
         
         <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -53,6 +54,7 @@
             width: 100%; padding: 12px; border: none; border-radius: 6px;
             font-weight: bold; color: white; cursor: pointer; transition: 0.3s; margin-bottom: 5px;
         }
+        .btn-green { background-color: #27ae60; }
         .btn-red { background-color: #c0392b; }
         .btn-blue { background-color: #2980b9; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .slider-wrap { background: #2a2a35; padding: 10px; border-radius: 6px; }
@@ -88,6 +90,7 @@
                     <input type="range" id="opacitySlider" min="0" max="1" step="0.1" value="0.5">
                 </div>
                 <div class="section-header">🌍 Land Explorer</div>
+                <button class="btn-green" onclick="alert('Gunakan butang carian di peta')">Cari Lot</button>
                 <button class="btn-red" onclick="location.reload()">Reset Peta</button>
                 <button class="btn-blue" onclick="generatePDF()"><i class="fas fa-file-pdf"></i> Export Detail (PDF)</button>
 
@@ -95,14 +98,6 @@
                     <div class="info-box">
                         <div class="info-label">No Lot Dipilih</div>
                         <div id="val-nolot" class="info-value">-</div>
-                    </div>
-                    <div class="info-box" style="border-left-color: #e67e22;">
-                        <div class="info-label">Easting (Long)</div>
-                        <div id="val-easting" class="info-value">-</div>
-                    </div>
-                    <div class="info-box" style="border-left-color: #e67e22;">
-                        <div class="info-label">Northing (Lat)</div>
-                        <div id="val-northing" class="info-value">-</div>
                     </div>
                     <div class="info-box">
                         <div class="info-label">Nama Pemilik (TSP PE)</div>
@@ -115,6 +110,14 @@
                     <div class="info-box">
                         <div class="info-label">TSP (HA)</div>
                         <div id="val-tsp-ha" class="info-value">-</div>
+                    </div>
+                    <div class="info-box">
+                        <div class="info-label">Easting (X)</div>
+                        <div id="val-easting" class="info-value">-</div>
+                    </div>
+                    <div class="info-box">
+                        <div class="info-label">Northing (Y)</div>
+                        <div id="val-northing" class="info-value">-</div>
                     </div>
                     <div class="info-box">
                         <div class="info-label">Maklumat Tambahan (Layer)</div>
@@ -142,6 +145,7 @@
         </div>
 
         <script src="js/leaflet.js"></script>
+        <script src="js/leaflet-search.js"></script>
         <script src="data/LOTFINAL_0.js"></script>
         <script>
         var selectedFeature;
@@ -157,32 +161,22 @@
         }).addTo(map);
 
         function pop_LOTFINAL_0(feature, layer) {
-            // Papar Easting/Northing apabila mouse menyentuh lot
-            layer.on('mouseover', function(e) {
-                document.getElementById('val-easting').innerText = e.latlng.lng.toFixed(6);
-                document.getElementById('val-northing').innerText = e.latlng.lat.toFixed(6);
-                
-                if (layer !== selectedFeature) {
-                    layer.setStyle({ weight: 2, color: '#f1c40f' });
-                }
-            });
-
-            layer.on('mouseout', function(e) {
-                if (layer !== selectedFeature) {
-                    layer_LOTFINAL_0.resetStyle(e.target);
-                }
-            });
-
             layer.on('click', function(e) {
                 if (selectedFeature) { layer_LOTFINAL_0.resetStyle(selectedFeature); }
                 selectedFeature = e.target;
                 selectedFeature.setStyle({ fillColor: '#ffff00', fillOpacity: 0.8, color: '#0000ff', weight: 3 });
 
+                // Paparkan maklumat asal
                 document.getElementById('val-nolot').innerText = feature.properties['NO_LOT'] || '-';
                 document.getElementById('val-pemilik').innerText = feature.properties['tsp — pe'] || '-';
                 document.getElementById('val-area').innerText = feature.properties['AREA'] || '-';
                 document.getElementById('val-tsp-ha').innerText = feature.properties['tsp — ha'] || '-';
                 document.getElementById('val-layer-extra').innerText = feature.properties['layer'] || '-';
+
+                // TAMBAHAN: Kemaskini koordinat Easting & Northing semasa klik
+                // .lng adalah X (Easting), .lat adalah Y (Northing)
+                document.getElementById('val-easting').innerText = e.latlng.lng.toFixed(6);
+                document.getElementById('val-northing').innerText = e.latlng.lat.toFixed(6);
             });
         }
 
