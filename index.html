@@ -72,6 +72,10 @@
         .pdf-label { font-size: 10px; color: #666; text-transform: uppercase; }
         .pdf-value { font-size: 14px; font-weight: bold; color: #203a43; }
         .pdf-logo { height: 60px; margin-bottom: 10px; }
+
+        /* Custom style for search box to match dark theme */
+        .leaflet-control-search { background: #1e1e26; border: 1px solid #333; }
+        .leaflet-control-search .search-input { background: #26262e; color: white; border: 1px solid #444; }
         </style>
         <title>Maklumat Lot | PUO</title>
     </head>
@@ -90,7 +94,6 @@
                     <input type="range" id="opacitySlider" min="0" max="1" step="0.1" value="0.5">
                 </div>
                 <div class="section-header">🌍 Land Explorer</div>
-                <button class="btn-green" onclick="alert('Gunakan butang carian di peta')">Cari Lot</button>
                 <button class="btn-red" onclick="location.reload()">Reset Peta</button>
                 <button class="btn-blue" onclick="generatePDF()"><i class="fas fa-file-pdf"></i> Export Detail (PDF)</button>
 
@@ -98,6 +101,14 @@
                     <div class="info-box">
                         <div class="info-label">No Lot Dipilih</div>
                         <div id="val-nolot" class="info-value">-</div>
+                    </div>
+                    <div class="info-box" style="border-left-color: #e67e22;">
+                        <div class="info-label">Easting (Long)</div>
+                        <div id="val-easting" class="info-value">-</div>
+                    </div>
+                    <div class="info-box" style="border-left-color: #e67e22;">
+                        <div class="info-label">Northing (Lat)</div>
+                        <div id="val-northing" class="info-value">-</div>
                     </div>
                     <div class="info-box">
                         <div class="info-label">Nama Pemilik (TSP PE)</div>
@@ -153,6 +164,25 @@
         }).addTo(map);
 
         function pop_LOTFINAL_0(feature, layer) {
+            // Fungsi apabila mouse masuk (hover)
+            layer.on('mouseover', function(e) {
+                document.getElementById('val-easting').innerText = e.latlng.lng.toFixed(6);
+                document.getElementById('val-northing').innerText = e.latlng.lat.toFixed(6);
+                
+                // Highlight sementara semasa hover jika bukan yang dipilih
+                if (layer !== selectedFeature) {
+                    layer.setStyle({ weight: 2, color: '#f1c40f' });
+                }
+            });
+
+            // Fungsi apabila mouse keluar
+            layer.on('mouseout', function(e) {
+                if (layer !== selectedFeature) {
+                    layer_LOTFINAL_0.resetStyle(e.target);
+                }
+            });
+
+            // Fungsi apabila Klik
             layer.on('click', function(e) {
                 if (selectedFeature) { layer_LOTFINAL_0.resetStyle(selectedFeature); }
                 selectedFeature = e.target;
@@ -170,6 +200,32 @@
             onEachFeature: pop_LOTFINAL_0,
             style: function(f) { return { opacity:1, color:'white', weight:1, fillOpacity:currentOpacity, fillColor:'#3498db' }; }
         }).addTo(map);
+
+        // --- TAMBAHAN: KOTAK CARIAN LOT ---
+        var searchControl = new L.Control.Search({
+            layer: layer_LOTFINAL_0,
+            propertyName: 'NO_LOT', // Mencari berdasarkan atribut NO_LOT
+            marker: false,
+            moveToLocation: function(latlng, title, map) {
+                map.setView(latlng, 19); 
+            }
+        });
+
+        searchControl.on('search:locationfound', function(e) {
+            if (selectedFeature) { layer_LOTFINAL_0.resetStyle(selectedFeature); }
+            selectedFeature = e.layer;
+            selectedFeature.setStyle({ fillColor: '#ffff00', fillOpacity: 0.8, color: '#0000ff', weight: 3 });
+            
+            // Kemaskini maklumat di sidebar
+            document.getElementById('val-nolot').innerText = e.layer.feature.properties['NO_LOT'] || '-';
+            document.getElementById('val-pemilik').innerText = e.layer.feature.properties['tsp — pe'] || '-';
+            document.getElementById('val-area').innerText = e.layer.feature.properties['AREA'] || '-';
+            document.getElementById('val-tsp-ha').innerText = e.layer.feature.properties['tsp — ha'] || '-';
+            document.getElementById('val-layer-extra').innerText = e.layer.feature.properties['layer'] || '-';
+        });
+
+        map.addControl(searchControl);
+        // --- END CARIAN ---
 
         async function generatePDF() {
             const { jsPDF } = window.jspdf;
