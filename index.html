@@ -8,7 +8,6 @@
         <link rel="stylesheet" href="css/L.Control.Layers.Tree.css">
         <link rel="stylesheet" href="css/qgis2web.css">
         <link rel="stylesheet" href="css/fontawesome-all.min.css">
-        <link rel="stylesheet" href="css/leaflet-search.css">
         
         <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -54,7 +53,6 @@
             width: 100%; padding: 12px; border: none; border-radius: 6px;
             font-weight: bold; color: white; cursor: pointer; transition: 0.3s; margin-bottom: 5px;
         }
-        .btn-green { background-color: #27ae60; }
         .btn-red { background-color: #c0392b; }
         .btn-blue { background-color: #2980b9; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .slider-wrap { background: #2a2a35; padding: 10px; border-radius: 6px; }
@@ -72,10 +70,6 @@
         .pdf-label { font-size: 10px; color: #666; text-transform: uppercase; }
         .pdf-value { font-size: 14px; font-weight: bold; color: #203a43; }
         .pdf-logo { height: 60px; margin-bottom: 10px; }
-
-        /* Custom style for search box to match dark theme */
-        .leaflet-control-search { background: #1e1e26; border: 1px solid #333; }
-        .leaflet-control-search .search-input { background: #26262e; color: white; border: 1px solid #444; }
         </style>
         <title>Maklumat Lot | PUO</title>
     </head>
@@ -148,7 +142,6 @@
         </div>
 
         <script src="js/leaflet.js"></script>
-        <script src="js/leaflet-search.js"></script>
         <script src="data/LOTFINAL_0.js"></script>
         <script>
         var selectedFeature;
@@ -164,25 +157,22 @@
         }).addTo(map);
 
         function pop_LOTFINAL_0(feature, layer) {
-            // Fungsi apabila mouse masuk (hover)
+            // Papar Easting/Northing apabila mouse menyentuh lot
             layer.on('mouseover', function(e) {
                 document.getElementById('val-easting').innerText = e.latlng.lng.toFixed(6);
                 document.getElementById('val-northing').innerText = e.latlng.lat.toFixed(6);
                 
-                // Highlight sementara semasa hover jika bukan yang dipilih
                 if (layer !== selectedFeature) {
                     layer.setStyle({ weight: 2, color: '#f1c40f' });
                 }
             });
 
-            // Fungsi apabila mouse keluar
             layer.on('mouseout', function(e) {
                 if (layer !== selectedFeature) {
                     layer_LOTFINAL_0.resetStyle(e.target);
                 }
             });
 
-            // Fungsi apabila Klik
             layer.on('click', function(e) {
                 if (selectedFeature) { layer_LOTFINAL_0.resetStyle(selectedFeature); }
                 selectedFeature = e.target;
@@ -200,32 +190,6 @@
             onEachFeature: pop_LOTFINAL_0,
             style: function(f) { return { opacity:1, color:'white', weight:1, fillOpacity:currentOpacity, fillColor:'#3498db' }; }
         }).addTo(map);
-
-        // --- TAMBAHAN: KOTAK CARIAN LOT ---
-        var searchControl = new L.Control.Search({
-            layer: layer_LOTFINAL_0,
-            propertyName: 'NO_LOT', // Mencari berdasarkan atribut NO_LOT
-            marker: false,
-            moveToLocation: function(latlng, title, map) {
-                map.setView(latlng, 19); 
-            }
-        });
-
-        searchControl.on('search:locationfound', function(e) {
-            if (selectedFeature) { layer_LOTFINAL_0.resetStyle(selectedFeature); }
-            selectedFeature = e.layer;
-            selectedFeature.setStyle({ fillColor: '#ffff00', fillOpacity: 0.8, color: '#0000ff', weight: 3 });
-            
-            // Kemaskini maklumat di sidebar
-            document.getElementById('val-nolot').innerText = e.layer.feature.properties['NO_LOT'] || '-';
-            document.getElementById('val-pemilik').innerText = e.layer.feature.properties['tsp — pe'] || '-';
-            document.getElementById('val-area').innerText = e.layer.feature.properties['AREA'] || '-';
-            document.getElementById('val-tsp-ha').innerText = e.layer.feature.properties['tsp — ha'] || '-';
-            document.getElementById('val-layer-extra').innerText = e.layer.feature.properties['layer'] || '-';
-        });
-
-        map.addControl(searchControl);
-        // --- END CARIAN ---
 
         async function generatePDF() {
             const { jsPDF } = window.jspdf;
