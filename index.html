@@ -1,533 +1,278 @@
 <!doctype html>
-
 <html lang="en">
-
     <head>
-
         <meta charset="utf-8">
-
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-
         <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
-
         <link rel="stylesheet" href="css/leaflet.css">
-
         <link rel="stylesheet" href="css/L.Control.Layers.Tree.css">
-
         <link rel="stylesheet" href="css/qgis2web.css">
-
         <link rel="stylesheet" href="css/fontawesome-all.min.css">
-
         <link rel="stylesheet" href="css/leaflet-search.css">
-
         
-
         <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
         
-
         <style>
-
         html, body {
-
             width: 100%; height: 100%; padding: 0; margin: 0;
-
             display: flex; flex-direction: column;
-
             font-family: 'Segoe UI', Tahoma, sans-serif;
-
             background-color: #121212; overflow: hidden;
-
         }
-
         header {
-
             background-color: #203a43; height: 60px;
-
             display: flex; align-items: center; justify-content: center;
-
             color: white; font-weight: bold; font-size: 22px;
-
             box-shadow: 0 2px 10px rgba(0,0,0,0.5); z-index: 1001;
-
             gap: 15px;
-
         }
-
         .header-logo {
-
             height: 45px;
-
             width: auto;
-
         }
-
         #main-container { display: flex; flex: 1; overflow: hidden; }
-
         #map { flex: 1; background: #000; }
-
         #sidebar {
-
             width: 320px; background-color: #1e1e26; color: white;
-
             padding: 20px; display: flex; flex-direction: column;
-
             gap: 12px; overflow-y: auto; border-left: 1px solid #333;
-
         }
-
         .section-header {
-
             font-size: 14px; font-weight: bold; color: #fff;
-
             display: flex; align-items: center; gap: 8px; margin-top: 10px;
-
             border-bottom: 1px solid #333; padding-bottom: 5px;
-
         }
-
         .info-box {
-
             background-color: #26262e; padding: 12px; border-radius: 6px;
-
             border-left: 4px solid #3498db; margin-bottom: 5px;
-
         }
-
         .info-label { color: #888; font-size: 10px; text-transform: uppercase; }
-
         .info-value { color: #3498db; font-size: 16px; font-weight: bold; margin-top: 4px; word-break: break-all; }
-
         
-
         button {
-
             width: 100%; padding: 12px; border: none; border-radius: 6px;
-
             font-weight: bold; color: white; cursor: pointer; transition: 0.3s; margin-bottom: 5px;
-
         }
-
         .btn-green { background-color: #27ae60; }
-
         .btn-red { background-color: #c0392b; }
-
         .btn-blue { background-color: #2980b9; display: flex; align-items: center; justify-content: center; gap: 8px; }
-
         .slider-wrap { background: #2a2a35; padding: 10px; border-radius: 6px; }
-
         input[type=range] { width: 100%; cursor: pointer; accent-color: #3498db; }
 
-
-
         #pdf-template {
-
             position: absolute; left: -9999px; top: -9999px;
-
             width: 800px; padding: 40px; background: white; color: black;
-
         }
-
         .pdf-header { border-bottom: 2px solid #203a43; padding-bottom: 10px; margin-bottom: 20px; text-align: center; }
-
         .pdf-layout { display: flex; gap: 20px; }
-
         .pdf-info { flex: 1; }
-
         .pdf-map-box { flex: 1.5; border: 1px solid #ccc; height: 400px; background: #eee; }
-
         .pdf-box { margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
-
         .pdf-label { font-size: 10px; color: #666; text-transform: uppercase; }
-
         .pdf-value { font-size: 14px; font-weight: bold; color: #203a43; }
-
         .pdf-logo { height: 60px; margin-bottom: 10px; }
-
         </style>
-
         <title>Maklumat Lot | PUO</title>
-
     </head>
-
     <body>
-
         <header>
-
             <img src="logo_puo.png" alt="Logo PUO" class="header-logo">
-
             Maklumat Lot
-
         </header>
 
-
-
         <div id="main-container">
-
             <div id="map"></div>
-
             <div id="sidebar">
-
                 <div class="section-header">⚙️ Tetapan Paparan</div>
-
                 <div class="slider-wrap">
-
                     <label style="font-size: 11px; color: #ccc;">Kecerahan Warna Lot</label>
-
                     <input type="range" id="opacitySlider" min="0" max="1" step="0.1" value="0.5">
-
                 </div>
-
                 <div class="section-header">🌍 Land Explorer</div>
-
                 <button class="btn-green" onclick="toggleSearch()">Cari Lot</button>
-
                 <button class="btn-red" onclick="location.reload()">Reset Peta</button>
-
                 <button class="btn-blue" onclick="generatePDF()"><i class="fas fa-file-pdf"></i> Export Detail (PDF)</button>
 
-
-
                 <div id="sidebar-info-list">
-
                     <div class="info-box">
-
                         <div class="info-label">No Lot Dipilih</div>
-
                         <div id="val-nolot" class="info-value">-</div>
-
                     </div>
-
                     <div class="info-box">
-
                         <div class="info-label">Nama Pemilik (TSP PE)</div>
-
                         <div id="val-pemilik" class="info-value">-</div>
-
                     </div>
-
                     <div class="info-box">
-
                         <div class="info-label">Luas Lot (AREA)</div>
-
                         <div id="val-area" class="info-value">-</div>
-
                     </div>
-
                     <div class="info-box">
-
                         <div class="info-label">TSP (HA)</div>
-
                         <div id="val-tsp-ha" class="info-value">-</div>
-
                     </div>
-
                     <div class="info-box">
-
                         <div class="info-label">Easting (X)</div>
-
                         <div id="val-easting" class="info-value">-</div>
-
                     </div>
-
                     <div class="info-box">
-
                         <div class="info-label">Northing (Y)</div>
-
                         <div id="val-northing" class="info-value">-</div>
-
                     </div>
-
                     <div class="info-box">
-
                         <div class="info-label">Maklumat Tambahan (Layer)</div>
-
                         <div id="val-layer-extra" class="info-value">-</div>
-
                     </div>
-
                 </div>
-
             </div>
-
         </div>
-
-
 
         <div id="pdf-template">
-
             <div class="pdf-header">
-
                 <img src="logo_puo.png" class="pdf-logo">
-
                 <h1>LAPORAN MAKLUMAT LOT</h1>
-
                 <p>Politeknik Ungku Omar - Sistem Land Explorer</p>
-
             </div>
-
             <div class="pdf-layout">
-
                 <div class="pdf-info" id="pdf-text-content"></div>
-
                 <div class="pdf-map-box" id="pdf-map-image">
-
                     <p style="text-align:center; padding-top:150px; color:#999;">Memproses Lukisan Lot...</p>
-
                 </div>
-
             </div>
-
             <div style="margin-top:30px; font-size:10px; color:#aaa; text-align:center; border-top:1px solid #eee;">
-
                 &copy; 2026 Maklumat Lot System - PUO IPGK
-
             </div>
-
         </div>
 
-
-
         <script src="js/leaflet.js"></script>
-
         <script src="js/leaflet-search.js"></script>
-
         <script src="data/LOTFINAL_0.js"></script>
-
         <script>
-
         var selectedFeature;
-
         var currentOpacity = 0.5;
 
-
-
         var map = L.map('map', {
-
             zoomControl: true, maxZoom: 28, minZoom: 1,
-
             preferCanvas: true 
-
         }).fitBounds([[2.1030350743779,102.52105338191231],[2.1043887132402834,102.52342571486739]]);
 
-
-
         var googleSatellite = L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
-
             opacity: 1.0, attribution: '&copy; Google Maps', maxZoom: 28, crossOrigin: true
-
         }).addTo(map);
-
-
 
         function updateSidebar(feature, latlng) {
-
             document.getElementById('val-nolot').innerText = feature.properties['NO_LOT'] || '-';
-
             document.getElementById('val-pemilik').innerText = feature.properties['tsp — pe'] || '-';
-
             document.getElementById('val-area').innerText = feature.properties['AREA'] || '-';
-
             document.getElementById('val-tsp-ha').innerText = feature.properties['tsp — ha'] || '-';
-
             document.getElementById('val-layer-extra').innerText = feature.properties['layer'] || '-';
-
             
-
             if(latlng) {
-
                 document.getElementById('val-easting').innerText = latlng.lng.toFixed(6);
-
                 document.getElementById('val-northing').innerText = latlng.lat.toFixed(6);
-
             }
-
         }
-
-
 
         function pop_LOTFINAL_0(feature, layer) {
-
-            layer.on('click', function(e) {
-
-                if (selectedFeature) { layer_LOTFINAL_0.resetStyle(selectedFeature); }
-
-                selectedFeature = e.target;
-
-                selectedFeature.setStyle({ fillColor: '#ffff00', fillOpacity: 0.8, color: '#0000ff', weight: 3 });
-
-                updateSidebar(feature, e.latlng);
-
+            // FUNGSI BARU: Papar koordinat apabila mouse hover (kena poligon)
+            layer.on('mouseover', function(e) {
+                var lat = e.latlng.lat.toFixed(6);
+                var lng = e.latlng.lng.toFixed(6);
+                
+                layer.bindTooltip("Lat: " + lat + "<br>Long: " + lng, {
+                    sticky: true, // Label ikut cursor
+                    direction: 'top',
+                    opacity: 0.9
+                }).openTooltip();
             });
 
+            // FUNGSI SEDIA ADA: Klik lot
+            layer.on('click', function(e) {
+                if (selectedFeature) { layer_LOTFINAL_0.resetStyle(selectedFeature); }
+                selectedFeature = e.target;
+                selectedFeature.setStyle({ fillColor: '#ffff00', fillOpacity: 0.8, color: '#0000ff', weight: 3 });
+                updateSidebar(feature, e.latlng);
+            });
         }
 
-
-
         var layer_LOTFINAL_0 = new L.geoJson(json_LOTFINAL_0, {
-
             onEachFeature: pop_LOTFINAL_0,
-
             style: function(f) { return { opacity:1, color:'white', weight:1, fillOpacity:currentOpacity, fillColor:'#3498db' }; }
-
         }).addTo(map);
 
-
-
-        // CONFIG SEARCH CONTROL
-
         var searchControl = new L.Control.Search({
-
             layer: layer_LOTFINAL_0,
-
-            propertyName: 'NO_LOT', // Kolum yang dicari
-
+            propertyName: 'NO_LOT', 
             marker: false,
-
             moveToLocation: function(latlng, title, map) {
-
                 map.setView(latlng, 19);
-
             }
-
         });
-
-
 
         searchControl.on('search:locationfound', function(e) {
-
             if (selectedFeature) { layer_LOTFINAL_0.resetStyle(selectedFeature); }
-
             selectedFeature = e.layer;
-
             selectedFeature.setStyle({ fillColor: '#ffff00', fillOpacity: 0.8, color: '#0000ff', weight: 3 });
-
             updateSidebar(e.layer.feature, e.latlng);
-
         });
-
-
 
         map.addControl(searchControl);
 
-
-
-        // Fungsi butang Sidebar untuk trigger carian
-
         function toggleSearch() {
-
             const searchInput = document.querySelector('.search-input');
-
             if (searchInput) {
-
                 searchControl.expand();
-
                 searchInput.focus();
-
             } else {
-
                 alert("Sila gunakan ikon kanta pembesar di atas peta.");
-
             }
-
         }
-
-
 
         async function generatePDF() {
-
             const { jsPDF } = window.jspdf;
-
             const noLot = document.getElementById('val-nolot').innerText;
-
             if(noLot === "-") { alert("Sila pilih lot di atas peta terlebih dahulu."); return; }
 
-
-
             const btn = document.querySelector('.btn-blue');
-
             const originalHTML = btn.innerHTML;
-
             btn.innerHTML = "Processing...";
-
             
-
             const mapElement = document.getElementById('map');
-
             
-
             const canvas = await html2canvas(mapElement, {
-
                 useCORS: true,
-
                 allowTaint: true,
-
                 ignoreElements: (el) => el.classList.contains('leaflet-control')
-
             });
-
             const mapImgData = canvas.toDataURL('image/png');
 
-
-
             const textContent = document.getElementById('sidebar-info-list').innerHTML;
-
             const pdfTextContent = document.getElementById('pdf-text-content');
-
             pdfTextContent.innerHTML = textContent.replaceAll('info-box', 'pdf-box')
-
                                                 .replaceAll('info-label', 'pdf-label')
-
                                                 .replaceAll('info-value', 'pdf-value');
-
             
-
             const pdfMapBox = document.getElementById('pdf-map-image');
-
             pdfMapBox.innerHTML = `<img src="${mapImgData}" style="width:100%; height:100%; object-fit:cover;">`;
 
-
-
             const template = document.getElementById('pdf-template');
-
             const finalCanvas = await html2canvas(template, { scale: 2 });
-
             const finalImg = finalCanvas.toDataURL('image/jpeg', 1.0);
 
-
-
             const doc = new jsPDF('p', 'mm', 'a4');
-
             const width = doc.internal.pageSize.getWidth();
-
             const height = (finalCanvas.height * width) / finalCanvas.width;
-
             
-
             doc.addImage(finalImg, 'JPEG', 0, 0, width, height);
-
             doc.save('Laporan_Lot_' + noLot + '.pdf');
-
             
-
             btn.innerHTML = originalHTML;
-
         }
 
-
-
         document.getElementById('opacitySlider').oninput = function(e) {
-
             currentOpacity = parseFloat(e.target.value);
-
             layer_LOTFINAL_0.setStyle({ fillOpacity: currentOpacity });
-
         };
-
         </script>
-
     </body>
-
 </html>
